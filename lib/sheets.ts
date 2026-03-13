@@ -83,7 +83,12 @@ function applyEdits(customers: Customer[], edits: Record<string, object>): Custo
   });
 }
 
+function isKvAvailable(): boolean {
+  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+}
+
 export async function fetchCustomers(): Promise<Customer[]> {
+  if (!isKvAvailable()) return DEMO_CUSTOMERS;
   try {
     const [syncData, edits] = await Promise.all([
       kv.get<SyncData>("customers"),
@@ -108,6 +113,7 @@ export async function fetchCustomerById(id: string): Promise<Customer | null> {
 }
 
 export async function getLastSynced(): Promise<string | null> {
+  if (!isKvAvailable()) return null;
   try {
     const data = await kv.get<SyncData>("customers");
     return data?.updatedAt ?? null;
