@@ -7,6 +7,7 @@ import { type Customer, searchCustomers } from "@/lib/sheets";
 const statusStyle: Record<string, { color: string; bg: string; border: string }> = {
   成約済:    { color: "#065f46", bg: "#d1fae5", border: "#a7f3d0" },
   対応中:    { color: "#0369a1", bg: "#e0f2fe", border: "#bae6fd" },
+  確認済み:  { color: "#0891b2", bg: "#e0f7fa", border: "#99f6e4" },
   フォロー中: { color: "#5b21b6", bg: "#ede9fe", border: "#ddd6fe" },
   検討中:    { color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
   クローズ:  { color: "#475569", bg: "#f1f5f9", border: "#e2e8f0" },

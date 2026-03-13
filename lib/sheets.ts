@@ -1,6 +1,7 @@
 import { kv } from "@vercel/kv";
+import { getEdits } from "./edits";
 
-export type CrmStatus = "成約済" | "対応中" | "フォロー中" | "検討中" | "クローズ";
+export type CrmStatus = "成約済" | "対応中" | "確認済み" | "フォロー中" | "検討中" | "クローズ";
 
 export type Customer = {
   id: string;
@@ -8,6 +9,7 @@ export type Customer = {
   email: string;
   phone: string;
   product: string;
+  assignedStaff: string;
   amount: string;
   paymentDate: string;
   paymentStatus: string;
@@ -47,6 +49,7 @@ function rowToCustomer(row: SheetRow, i: number): Customer {
     email: row["MAIL"] || row["E-mail"] || "",
     phone: row["TEL"] || row["電話番号"] || "",
     product: row["商品"] || "",
+    assignedStaff: "",
     amount: row["決済金額"] || row["金額"] || "",
     paymentDate: (row["決済日時"] || "").split("T")[0] || "",
     paymentStatus: row["支払い状況\n完了＆分割"] || "",
@@ -72,14 +75,28 @@ const DEMO_CUSTOMERS: Customer[] = [
   { id: "demo-5", name: "伊藤 さくら", email: "ito.sakura@example.com", phone: "080-5555-6666", product: "AI体験セミナー", amount: "0", paymentDate: "2025-09-01", paymentStatus: "", deliveryStatus: "未完了", lineName: "さくら", lineId: "L5", gender: "女性", age: "26〜30歳", memo: "フリーランスのデザイナー。予算の問題でクローズ。半年後に再コンタクト予定。", phoneMemo: "", attribute: "SNS", lpName: "LP100", resell: "", status: "クローズ" },
 ];
 
+function applyEdits(customers: Customer[], edits: Record<string, object>): Customer[] {
+  return customers.map((c) => {
+    const edit = edits[c.id];
+    if (!edit) return c;
+    return { ...c, ...edit };
+  });
+}
+
 export async function fetchCustomers(): Promise<Customer[]> {
   try {
-    const data = await kv.get<SyncData>("customers");
-    if (!data || data.rows.length === 0) return DEMO_CUSTOMERS;
-    const real = data.rows
-      .filter((row) => row["名前"] || row["TEL"] || row["MAIL"])
-      .map((row, i) => rowToCustomer(row, i));
-    return real.length > 0 ? real : DEMO_CUSTOMERS;
+    const [syncData, edits] = await Promise.all([
+      kv.get<SyncData>("customers"),
+      getEdits(),
+    ]);
+    const base = (() => {
+      if (!syncData || syncData.rows.length === 0) return DEMO_CUSTOMERS;
+      const real = syncData.rows
+        .filter((row) => row["名前"] || row["TEL"] || row["MAIL"])
+        .map((row, i) => rowToCustomer(row, i));
+      return real.length > 0 ? real : DEMO_CUSTOMERS;
+    })();
+    return applyEdits(base, edits);
   } catch {
     return DEMO_CUSTOMERS;
   }

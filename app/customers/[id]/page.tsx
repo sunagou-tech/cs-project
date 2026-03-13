@@ -7,6 +7,7 @@ type Props = { params: Promise<{ id: string }> };
 const statusStyle: Record<string, { color: string; bg: string; border: string }> = {
   成約済:    { color: "#065f46", bg: "#d1fae5", border: "#a7f3d0" },
   対応中:    { color: "#0369a1", bg: "#e0f2fe", border: "#bae6fd" },
+  確認済み:  { color: "#0891b2", bg: "#e0f7fa", border: "#99f6e4" },
   フォロー中: { color: "#5b21b6", bg: "#ede9fe", border: "#ddd6fe" },
   検討中:    { color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
   クローズ:  { color: "#475569", bg: "#f1f5f9", border: "#e2e8f0" },
@@ -51,10 +52,22 @@ export default async function CustomerDetailPage({ params }: Props) {
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 24px" }}>
 
       {/* パンくず */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28, fontSize: 12, color: "#94a3b8" }}>
-        <Link href="/" style={{ color: "#94a3b8", textDecoration: "none" }}>DATABASE</Link>
-        <span style={{ color: "#cbd5e1" }}>/</span>
-        <span style={{ color: "#0f172a", fontWeight: 600 }}>{customer.name}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#94a3b8" }}>
+          <Link href="/" style={{ color: "#94a3b8", textDecoration: "none" }}>DATABASE</Link>
+          <span style={{ color: "#cbd5e1" }}>/</span>
+          <span style={{ color: "#0f172a", fontWeight: 600 }}>{customer.name}</span>
+        </div>
+        <Link href={`/customers/${id}/edit`} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          background: "#0ea5e9", color: "#ffffff", fontSize: 12, fontWeight: 700,
+          padding: "8px 16px", borderRadius: 7, textDecoration: "none", letterSpacing: "0.04em",
+        }}>
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          編集
+        </Link>
       </div>
 
       {/* 基本情報ヘッダー */}
@@ -76,6 +89,7 @@ export default async function CustomerDetailPage({ params }: Props) {
               </div>
             </div>
             <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.8, textAlign: "right" }}>
+              {customer.assignedStaff && <p style={{ margin: 0 }}>担当 <span style={{ color: "#0f172a", fontWeight: 600 }}>{customer.assignedStaff}</span></p>}
               {customer.attribute && <p style={{ margin: 0 }}>属性 <span style={{ color: "#0f172a", fontWeight: 600 }}>{customer.attribute}</span></p>}
               {customer.paymentDate && <p style={{ margin: 0, fontFamily: "monospace", color: "#94a3b8" }}>{customer.paymentDate}</p>}
             </div>
