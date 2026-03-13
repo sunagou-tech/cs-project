@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { kv } from "@vercel/kv";
 
 const SYNC_TOKEN = process.env.SYNC_TOKEN || "crm-sync-2026";
 
@@ -11,10 +10,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const data = await req.json();
-    const filePath = path.join(process.cwd(), "data", "customers.json");
-    await writeFile(filePath, JSON.stringify({ updatedAt: new Date().toISOString(), rows: data }));
-    return NextResponse.json({ ok: true, count: data.length });
+    const rows = await req.json();
+    await kv.set("customers", { updatedAt: new Date().toISOString(), rows });
+    return NextResponse.json({ ok: true, count: rows.length });
   } catch (e) {
     return NextResponse.json({ ok: false, message: String(e) }, { status: 500 });
   }

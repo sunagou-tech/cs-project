@@ -1,5 +1,4 @@
-import { readFile } from "fs/promises";
-import path from "path";
+import { kv } from "@vercel/kv";
 
 export type CrmStatus = "成約済" | "対応中" | "フォロー中" | "検討中" | "クローズ";
 
@@ -67,9 +66,8 @@ function rowToCustomer(row: SheetRow, i: number): Customer {
 
 export async function fetchCustomers(): Promise<Customer[]> {
   try {
-    const filePath = path.join(process.cwd(), "data", "customers.json");
-    const raw = await readFile(filePath, "utf-8");
-    const data: SyncData = JSON.parse(raw);
+    const data = await kv.get<SyncData>("customers");
+    if (!data) return [];
     return data.rows
       .filter((row) => row["名前"] || row["TEL"] || row["MAIL"])
       .map((row, i) => rowToCustomer(row, i));
@@ -85,10 +83,8 @@ export async function fetchCustomerById(id: string): Promise<Customer | null> {
 
 export async function getLastSynced(): Promise<string | null> {
   try {
-    const filePath = path.join(process.cwd(), "data", "customers.json");
-    const raw = await readFile(filePath, "utf-8");
-    const data: SyncData = JSON.parse(raw);
-    return data.updatedAt;
+    const data = await kv.get<SyncData>("customers");
+    return data?.updatedAt ?? null;
   } catch {
     return null;
   }
