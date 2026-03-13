@@ -1,65 +1,193 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { customers, searchCustomers } from "@/lib/data";
+
+const statusStyle: Record<string, { color: string; bg: string; border: string }> = {
+  対応中:    { color: "#0369a1", bg: "#e0f2fe", border: "#bae6fd" },
+  成約済:    { color: "#065f46", bg: "#d1fae5", border: "#a7f3d0" },
+  検討中:    { color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
+  フォロー中: { color: "#5b21b6", bg: "#ede9fe", border: "#ddd6fe" },
+  クローズ:  { color: "#475569", bg: "#f1f5f9", border: "#e2e8f0" },
+};
+
+export default function HomePage() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const results = query.trim() ? searchCustomers(query) : customers;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "40px 24px" }}>
+
+      {/* タイトル */}
+      <div style={{ marginBottom: 32 }}>
+        <p style={{ color: "#94a3b8", fontSize: 11, letterSpacing: "0.2em", marginBottom: 6 }}>CUSTOMER DATABASE</p>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+          <h1 style={{ color: "#0f172a", fontSize: 28, fontWeight: 900, letterSpacing: "0.04em", margin: 0 }}>
+            {customers.length.toString().padStart(3, "0")}
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <span style={{ color: "#94a3b8", fontSize: 13 }}>RECORDS</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* 検索バー */}
+      <div style={{ position: "relative", marginBottom: 28 }}>
+        <div style={{
+          position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+          color: "#94a3b8",
+        }}>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
-      </main>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="苗字で検索..."
+          style={{
+            width: "100%",
+            background: "#ffffff",
+            border: "1px solid #e2e8f0",
+            borderRadius: 8,
+            padding: "12px 14px 12px 44px",
+            color: "#0f172a",
+            fontSize: 14,
+            outline: "none",
+            boxSizing: "border-box",
+            transition: "border-color 0.15s, box-shadow 0.15s",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#0ea5e9";
+            e.target.style.boxShadow = "0 0 0 3px rgba(14,165,233,0.1)";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#e2e8f0";
+            e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)";
+          }}
+        />
+        {query && (
+          <button onClick={() => setQuery("")} style={{
+            position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+            color: "#94a3b8", background: "none", border: "none", cursor: "pointer", padding: 4,
+          }}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* 顧客リスト */}
+      {results.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "80px 0", color: "#94a3b8" }}>
+          <p style={{ letterSpacing: "0.1em", fontSize: 13 }}>NO RECORDS FOUND</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {/* ヘッダー行 */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 130px 110px 80px",
+            padding: "8px 16px",
+            color: "#94a3b8",
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            borderBottom: "1px solid #e2e8f0",
+          }}>
+            <span>CLIENT</span>
+            <span>CONTACT</span>
+            <span>STATUS</span>
+            <span style={{ textAlign: "right" }}>LOGS</span>
+          </div>
+
+          {results.map((customer) => {
+            const s = statusStyle[customer.status] ?? statusStyle["クローズ"];
+            return (
+              <button
+                key={customer.id}
+                onClick={() => router.push(`/customers/${customer.id}`)}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 130px 110px 80px",
+                  alignItems: "center",
+                  padding: "14px 16px",
+                  background: "#ffffff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.12s",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.borderColor = "#bae6fd";
+                  el.style.boxShadow = "0 2px 8px rgba(14,165,233,0.08)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.borderColor = "#e2e8f0";
+                  el.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)";
+                }}
+              >
+                {/* 名前 */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 8,
+                    background: s.bg,
+                    border: `1px solid ${s.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                    color: s.color,
+                    fontWeight: 900, fontSize: 14,
+                  }}>
+                    {customer.lastName[0]}
+                  </div>
+                  <div>
+                    <p style={{ color: "#0f172a", fontWeight: 700, fontSize: 14, margin: 0 }}>
+                      {customer.lastName} {customer.firstName}
+                    </p>
+                    <p style={{ color: "#94a3b8", fontSize: 11, margin: "2px 0 0" }}>
+                      {customer.assignedStaff}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 電話番号 */}
+                <span style={{ color: "#64748b", fontSize: 12, fontFamily: "monospace" }}>
+                  {customer.phone}
+                </span>
+
+                {/* ステータス */}
+                <span style={{
+                  display: "inline-block",
+                  color: s.color,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  padding: "3px 10px",
+                  borderRadius: 4,
+                  border: `1px solid ${s.border}`,
+                  background: s.bg,
+                  whiteSpace: "nowrap",
+                }}>
+                  {customer.status}
+                </span>
+
+                {/* ログ数 */}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, color: "#94a3b8", fontSize: 12, fontFamily: "monospace" }}>
+                  <span title="電話">{customer.phoneLogs.length}</span>
+                  <span title="LINE">{customer.lineLogs.length}</span>
+                  <span title="イベント">{customer.eventLogs.length}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
